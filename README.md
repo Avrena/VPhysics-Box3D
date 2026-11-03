@@ -1,10 +1,64 @@
 # VPhysics Box3D
 
-This is a reimplementation of Source VPhysics (IVP/Havok) on [Box3D](https://github.com/erincatto/box3d).
+A replacement for Source's VPhysics module (IVP/Havok), built on [Box3D](https://github.com/erincatto/box3d), Erin Catto's 3D physics engine. One build works for both Garry's Mod and Source SDK 2013 Multiplayer games.
 
-For discussions, please join the Discord server [here](https://discord.gg/rbCJdZjewf).
+> [!NOTE]
+> This repository is a fork of [Asphaltian/VPhysics-Box3D](https://github.com/Asphaltian/VPhysics-Box3D). Releases, the issue tracker and the [Discord server](https://discord.gg/rbCJdZjewf) are upstream.
+
+## Status
+
+Version 0.2.0 is a full rewrite that follows the original VPhysics behaviour. Box3D itself is still alpha software (v0.1.0), so some physics will feel different from stock. Known differences are tracked in the [upstream issues](https://github.com/Asphaltian/VPhysics-Box3D/issues).
+
+## Compatibility
+
+### Garry's Mod branches
+
+| Branch | Supported |
+|:--|:--|
+| `public` (default) and `dev` | Yes |
+| `x86-64` beta | **No.** The game fails to start with this module on this branch. Facepunch plans to retire it; use `public` or `dev`, which include 64-bit Windows builds. |
+
+Garry's Mod does not ship 64-bit Linux builds on `public` or `dev` yet (November 2026). Until it does, Garry's Mod on Linux uses the 32-bit (`x86`) builds.
+
+### Builds
+
+| Preset | Output | Use for | Tested upstream |
+|:--|:--|:--|:--:|
+| `windows-x64` | `vphysics.dll` | 64-bit Windows game and dedicated server | ✔️ |
+| `windows-x86` | `vphysics.dll` | 32-bit Windows game and dedicated server | ✔️ |
+| `linux-x64` | `vphysics.so` | 64-bit Linux game (Source SDK 2013) | |
+| `linux-x86` | `vphysics.so` | 32-bit Linux game | |
+| `dedicated-linux-x64` | `vphysics_srv.so` | 64-bit Linux dedicated server (Source SDK 2013) | |
+| `dedicated-linux-x86` | `vphysics_srv.so` | 32-bit Linux dedicated server | ✔️ |
+
+Windows dedicated servers load the same `vphysics.dll` as the game, so there is no separate Windows dedicated build.
+
+## Installing
+
+1. Download the zip for your platform from the [upstream releases](https://github.com/Asphaltian/VPhysics-Box3D/releases). The `dedicated-linux` zips are for Linux dedicated servers; Windows dedicated servers use the Windows zips.
+2. Back up the game's own `vphysics` file, then replace it with the one from the zip:
+
+   | Game | Windows x64 | Windows x86 | Linux x64 | Linux x86 |
+   |:--|:--|:--|:--|:--|
+   | Garry's Mod | `bin/win64/vphysics.dll` | `bin/vphysics.dll` | not available yet | `bin/vphysics.so` |
+   | Garry's Mod Dedicated Server | `bin/win64/vphysics.dll` | `bin/vphysics.dll` | not available yet | `bin/vphysics_srv.so` |
+   | Source SDK Base 2013 Multiplayer | `bin/x64/vphysics.dll` | `bin/vphysics.dll` | `bin/linux64/vphysics.so` | `bin/vphysics.so` |
+   | Source SDK Base 2013 Dedicated Server | `bin/x64/vphysics.dll` | `bin/vphysics.dll` | `bin/linux64/vphysics_srv.so` | `bin/vphysics_srv.so` |
+
+3. Start the game or server and run `vbox_version` in the console. It prints the module version, the Box3D revision and the build platform. If the command is unknown, the original module is still loaded.
+
+Steam puts the original file back whenever it verifies or updates the game, so copy the module over again after each update.
+
+## Configuration
+
+| Name | Default | Description |
+|:--|:--|:--|
+| `vbox_threads` | `0` | Physics worker threads, from 0 to 32. `0` uses one per physical CPU core. Saved to the config; takes effect on the next map load. |
+| `vbox_version` | | Command. Prints the module version, the Box3D revision and the build platform. |
 
 ## Features
+
+Compared with the original VPhysics and with [Volt](https://github.com/misyltoad/VPhysics-Jolt) (VPhysics on Jolt):
 
 | Feature | VPhysics | Volt | VBox3D |
 |:--|:--:|:--:|:--:|
@@ -29,35 +83,22 @@ For discussions, please join the Discord server [here](https://discord.gg/rbCJdZ
 | Multithreaded | ❌ | ✔️ | ✔️ |
 | Player controller | ✔️ | ✔️ | ✔️ |
 
-## Platforms
-
-One build works for both Garry's Mod and Source SDK 2013 Multiplayer games, just pick the preset for your platform.
-
-| Preset | Builds | Tested |
-|:--|:--:|:--:|
-| `windows-x64` | ✔️ | ✔️ |
-| `windows-x86` | ✔️ | ✔️ |
-| `linux-x64` | ✔️ |  |
-| `linux-x86` | ✔️ |  |
-| `dedicated-linux-x64` | ✔️ |  |
-| `dedicated-linux-x86` | ✔️ | ✔️ |
-
-Windows dedicated servers load the same `vphysics.dll` as the game, so they use the Windows presets.
-
 ## Building
 
 You'll need:
 
 * **CMake** 3.25 or newer
-* **Windows:** Visual Studio 2026 with the **Desktop development with C++** workload, plus **C++ Clang tools for Windows** for `windows-x86`
-* **Linux:** Podman or Docker
+* **Windows:** Visual Studio 2026 with the **Desktop development with C++** workload. The `windows-x86` preset also needs **C++ Clang tools for Windows**, because Box3D is built with ClangCL for 32-bit.
+* **Linux:** Podman or Docker. Linux builds run inside Valve's Steam Runtime SDK, the same environment the games are built in.
 
-Clone the repository with its submodules:
+Clone the repository with its submodules (Box3D and the Source SDK 2013):
 
 ```
-git clone --recursive https://github.com/Asphaltian/VPhysics-Box3D.git
+git clone --recursive https://github.com/Avrena/VPhysics-Box3D.git
 cd VPhysics-Box3D
 ```
+
+For an existing clone, run `git submodule update --init --recursive`.
 
 On Windows, configure and build the preset for your platform:
 
@@ -66,55 +107,42 @@ cmake --preset windows-x64
 cmake --build --preset windows-x64-release
 ```
 
-Linux builds are made inside Valve's Steam Runtime SDK, the same environment the games themselves are built in:
+On Linux, run the same two steps in the Steam Runtime container (use `docker` in place of `podman` if you prefer):
 
 ```
 podman run --rm -v "$PWD":/src -w /src registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest \
-	sh -c "cmake --preset linux-x86 && cmake --build --preset linux-x86-release"
+	sh -c "cmake --preset dedicated-linux-x86 && cmake --build --preset dedicated-linux-x86-release"
 ```
 
-The library ends up in `build/<preset>/src/Release/`. Swap `-release` for `-debug` if you need a debug build.
+The library ends up in `build/<preset>/src/Release/`. Use the `-debug` build presets for a debug build, which goes to `Debug/` instead. Linux builds also write a separate `.so.debug` symbol file next to the library.
 
-## Installing
+The version that `vbox_version` prints comes from `git describe`, so build from a git checkout.
 
-> [!CAUTION]
-> **For Garry's Mod users: `x86-64` is not supported.** Do not create issues for this branch. I will not be responsible for your inability to read!
+## Reporting problems
 
-Replace the game's own `vphysics` library with the one you built:
+Report bugs on the [upstream issue tracker](https://github.com/Asphaltian/VPhysics-Box3D/issues). It is for crashes and for behaviour that differs from the original VPhysics. Include:
 
-| Game | Windows | Linux |
-|:--|:--|:--|
-| Garry's Mod | `bin/win64/vphysics.dll` (x64), `bin/vphysics.dll` (x86) | `bin/vphysics.so` |
-| Garry's Mod Dedicated Server | `bin/win64/vphysics.dll` (x64), `bin/vphysics.dll` (x86) | `bin/vphysics_srv.so` |
-| Source SDK Base 2013 Multiplayer | `bin/x64/vphysics.dll` (x64), `bin/vphysics.dll` (x86) | `bin/linux64/vphysics.so` (x64), `bin/vphysics.so` (x86) |
-| Source SDK Base 2013 Dedicated Server | `bin/x64/vphysics.dll` (x64), `bin/vphysics.dll` (x86) | `bin/linux64/vphysics_srv.so` (x64), `bin/vphysics_srv.so` (x86) |
-
-Keep in mind that Steam puts the original back whenever it verifies or updates the game files, so back it up and copy yours over again afterwards.
+* the `vbox_version` output
+* the game, branch and platform
+* whether the problem also happens with the game's original `vphysics`
 
 ## Media
 
-### Jolt vs. Box3D
 [![Jolt vs. Box3D](https://i.ytimg.com/vi/okKg7In3OJw/hqdefault.jpg)](https://www.youtube.com/watch?v=okKg7In3OJw "Jolt vs. Box3D")
 
-### IVP/Havok vs. Jolt vs. Box3D (old)
-[![IVP/Havok vs. Jolt vs. Box3D](https://i.ytimg.com/vi/cs8C8T1vg7g/hqdefault.jpg)](https://youtu.be/cs8C8T1vg7g "IVP/Havok vs. Jolt vs. Box3D")
+More videos:
 
-### Watermelons
-[![Watermelons](https://i.ytimg.com/vi/yTp4jTYFWJ8/hqdefault.jpg)](https://youtu.be/yTp4jTYFWJ8 "Watermelons")
-
-### Buoyant Mossmans
-[![Buoyant Mossmans](https://i.ytimg.com/vi/z4MaxT87Eqs/hqdefault.jpg)](https://youtu.be/z4MaxT87Eqs "Buoyant Mossmans")
-
-### Battle for Flatgrass
-[![Battle for Flatgrass](https://i.ytimg.com/vi/BVPiprozkNM/hqdefault.jpg)](https://youtu.be/BVPiprozkNM "Battle for Flatgrass")
-
-### Vehicular Homicide
-[![Vehicular Homicide](https://i.ytimg.com/vi/IOlv3qxC7Js/hqdefault.jpg)](https://youtu.be/IOlv3qxC7Js "Vehicular Homicide")
+* [IVP/Havok vs. Jolt vs. Box3D](https://youtu.be/cs8C8T1vg7g) (older version)
+* [Watermelons](https://youtu.be/yTp4jTYFWJ8)
+* [Buoyant Mossmans](https://youtu.be/z4MaxT87Eqs)
+* [Battle for Flatgrass](https://youtu.be/BVPiprozkNM)
+* [Vehicular Homicide](https://youtu.be/IOlv3qxC7Js)
 
 ## Credits
 
+* [VPhysics Box3D](https://github.com/Asphaltian/VPhysics-Box3D) by Asphaltian
 * [Box3D](https://github.com/erincatto/box3d) by Erin Catto
-* Inspired by [Volt](https://github.com/Joshua-Ashton/VPhysics-Jolt) by Joshua Ashton and Josh Dowell
+* Inspired by [Volt](https://github.com/misyltoad/VPhysics-Jolt) by Joshua Ashton and Josh Dowell
 
 ## License
 
